@@ -11,6 +11,8 @@ mongoose.connect('mongodb://maram:eueu123@ds233452.mlab.com:33452/hacktivoverflo
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var questionsRouter = require('./routes/questions');
+var answersRouter = require('./routes/answers');
 
 var app = express();
 
@@ -28,6 +30,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/questions', questionsRouter);
+app.use('/answers', answersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

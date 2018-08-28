@@ -7,7 +7,7 @@ class LoginCheck {
     jwt.verify(req.headers.token, process.env.JWT_SECRET_KEY, function(err,decoded){
       // console.log(decoded);
       if (decoded === undefined) {
-        res.status(400).json({message: 'not logged in', err})
+        res.status(400).json({message: 'not logged in / token invalid', err})
       }
       User.findOne({ _id: decoded.id })
       .then(user=>{
