@@ -1,6 +1,7 @@
 const User = require('../models/user')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const axios = require('axios')
 const nodeMailer = require('nodemailer')
 
 class UserController {
@@ -161,6 +162,51 @@ class UserController {
     })
     .catch(err=>{
       res.status(400).json({message: 'email is not found'})
+    })
+  }
+  static fbLogin(req, res){
+    let accessToken = req.headers.token
+    axios.get(`https://graph.facebook.com/me?fields=name,email&access_token=${accessToken}`)
+    .then(resFb=>{
+      User.findOne({ email: resFb.data.email })
+      .then(regist=>{
+        console.log(regist);
+        if (regist === null) {
+          const saltUser = bcrypt.genSaltSync(8)
+          const hashedPassword = bcrypt.hashSync(`${resFb.data.email}123`, saltUser)
+          // console.log(resFb.data);
+          User.create({
+            name: resFb.data.name,
+            email: resFb.data.email,
+            password: hashedPassword
+          })
+          .then(user=>{
+            const tokenUser = jwt.sign({
+              id: user._id,
+              name: user.name,
+              email: user.email,
+              role: user.role
+            }, process.env.JWT_SECRET_KEY)
+            // console.log(tokenUser);
+            let dataObj = { token: tokenUser, id: user._id, name: user.name, email: user.email }
+            res.status(200).json({message: 'login successful!', data: dataObj})
+          })
+          .catch(err=>{
+            res.status(400).json({message: 'something went wrong!', err})
+          })
+        }else if (regist.email === resFb.data.email) {
+          const tokenUser = jwt.sign({
+            id: regist._id,
+            name: regist.name,
+            email: regist.email,
+            role: regist.role
+          }, process.env.JWT_SECRET_KEY)
+          // console.log(tokenUser);
+          let dataObj = { token: tokenUser, id: regist._id, name: regist.name, email: regist.email }
+          res.status(200).json({message: 'login successful!', data: dataObj})
+          // req.headers.token = tokenUser
+        }
+      })
     })
   }
 }
