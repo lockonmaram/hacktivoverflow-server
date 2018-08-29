@@ -21,7 +21,7 @@ class QuestionController {
   }
   static getQuestions(req, res){
     Question.find({})
-    .populate('comment')
+    .populate('answers')
     .populate('writer')
     .then(questions=>{
       if (questions.length === 0) {
@@ -36,8 +36,8 @@ class QuestionController {
   static getOneQuestion(req, res){
     Question.findOne({ _id: req.params.id })
     .populate({
-      path: 'comment',
-      populate: { path: 'userId' }
+      path: 'answers',
+      populate: { path: 'writer' }
     })
     .populate('writer')
     .then(question=>{
